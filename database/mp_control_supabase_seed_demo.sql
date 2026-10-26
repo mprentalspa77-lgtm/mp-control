@@ -8,6 +8,12 @@
 
 -- =====================================================================
 
+-- Limpieza previa: permite volver a ejecutar este archivo sin duplicar datos (solo datos de demo).
+truncate table bitacora, ajustes_inventario, compras, canibalizaciones, uso_repuestos, ordenes_trabajo,
+  recepciones, extensiones_contrato, contratos, repuestos, equipos, proveedores, clientes,
+  solicitudes_acceso, solicitudes_eliminacion, registros_eliminados, usuarios
+  restart identity cascade;
+
 -- usuarios (3 filas)
 insert into usuarios (usuario, nombre, correo, rol, activo, fecha_baja) values
   ('juan', 'Juan González', 'juan@mprental.cl', 'Jefe', 'Sí', null),
@@ -36,6 +42,10 @@ insert into equipos (codigo_equipo, nombre, id_categoria, ubicacion, patio_sin_d
   ('COR-003', 'Cortadora de pavimento', 'COR', 'arriendo', null, null, 1120, 1136, 'No', null, 'Sí'),
   ('ALI-006', 'Alisadora de hormigón', 'ALI', 'patio-reg', null, null, 690, 490, 'Sí', null, 'Sí'),
   ('MRT-001', 'Martillo demoledor', 'MRT', 'arriendo', null, null, 540, 650, 'No', null, 'Sí');
+
+-- proveedores (1 fila, ficticia: el esquema exige proveedor en toda compra)
+insert into proveedores (id_proveedor, nombre, rut, contacto, telefono, correo, activo) values
+  ('PRV-001', 'Proveedor demo (ficticio)', null, null, null, null, 'Sí');
 
 -- repuestos (18 filas)
 insert into repuestos (id_repuesto, nombre, tipo, unidad, controla_stock, stock_actual, stock_minimo, precio_unitario_clp, canibalizable, activo) values
@@ -107,17 +117,17 @@ insert into canibalizaciones (id_canibalizacion, fecha_hora, equipo_donante, id_
   (1, '2026-10-17 10:00:00 America/Santiago', 'PLC-003', 'REP-007', null, 'PLC-012', 'Desmantelado', 'operario');
 
 -- compras (10 filas)
-insert into compras (id_compra, fecha_hora, id_repuesto, cantidad, precio_unitario_clp, origen, detalle, estado, ot_origen, id_canibalizacion) values
-  (1, '2026-10-17 10:00:00 America/Santiago', 'REP-007', 1, 85000, 'Canibalización', 'PLC-003 → PLC-012', 'Aprobada', null, 1),
-  (2, '2026-09-10 10:00:00 America/Santiago', 'REP-002', 12, 9800, 'Alerta de mínimo', 'Stock 3 · mínimo 6', 'Recibida', null, null),
-  (3, '2026-09-14 10:00:00 America/Santiago', 'REP-005', 20, 5200, 'Mantención', 'OT-224 · GEN-014', 'Recibida', 'OT-224', null),
-  (4, '2026-09-16 10:00:00 America/Santiago', 'REP-004', 6, 18900, 'Alerta de mínimo', 'Stock 2 · mínimo 8', 'Recibida', null, null),
-  (5, '2026-09-18 10:00:00 America/Santiago', 'REP-006', 2, 68000, 'Mantención', 'OT-226 · VIB-005', 'Recibida', 'OT-226', null),
-  (6, '2026-09-05 10:00:00 America/Santiago', 'REP-008', 1, 120000, 'Canibalización', 'GEN-006 → GEN-014', 'Recibida', null, null),
-  (7, '2026-10-08 10:00:00 America/Santiago', 'REP-001', 10, 12500, 'Alerta de mínimo', 'Stock 1 · mínimo 6', 'Recibida', null, null),
-  (8, '2026-10-12 10:00:00 America/Santiago', 'REP-005', 20, 5200, 'Sugerencia manual', 'Pedida por Silvio V.', 'Recibida', null, null),
-  (9, '2026-10-14 10:00:00 America/Santiago', 'REP-003', 8, 14200, 'Alerta de mínimo', 'Stock 2 · mínimo 5', 'Recibida', null, null),
-  (10, '2026-10-15 10:00:00 America/Santiago', 'REP-002', 6, 9800, 'Mantención', 'OT-228 · TIL-004', 'Recibida', 'OT-228', null);
+insert into compras (id_compra, fecha_hora, id_repuesto, cantidad, precio_unitario_clp, origen, detalle, estado, ot_origen, id_canibalizacion, id_proveedor, nro_factura) values
+  (1, '2026-10-17 10:00:00 America/Santiago', 'REP-007', 1, 85000, 'Canibalización', 'PLC-003 → PLC-012', 'Aprobada', null, 1, 'PRV-001', null),
+  (2, '2026-09-10 10:00:00 America/Santiago', 'REP-002', 12, 9800, 'Alerta de mínimo', 'Stock 3 · mínimo 6', 'Recibida', null, null, 'PRV-001', 'DEMO-002'),
+  (3, '2026-09-14 10:00:00 America/Santiago', 'REP-005', 20, 5200, 'Mantención', 'OT-224 · GEN-014', 'Recibida', 'OT-224', null, 'PRV-001', 'DEMO-003'),
+  (4, '2026-09-16 10:00:00 America/Santiago', 'REP-004', 6, 18900, 'Alerta de mínimo', 'Stock 2 · mínimo 8', 'Recibida', null, null, 'PRV-001', 'DEMO-004'),
+  (5, '2026-09-18 10:00:00 America/Santiago', 'REP-006', 2, 68000, 'Mantención', 'OT-226 · VIB-005', 'Recibida', 'OT-226', null, 'PRV-001', 'DEMO-005'),
+  (6, '2026-09-05 10:00:00 America/Santiago', 'REP-008', 1, 120000, 'Canibalización', 'GEN-006 → GEN-014', 'Recibida', null, null, 'PRV-001', 'DEMO-006'),
+  (7, '2026-10-08 10:00:00 America/Santiago', 'REP-001', 10, 12500, 'Alerta de mínimo', 'Stock 1 · mínimo 6', 'Recibida', null, null, 'PRV-001', 'DEMO-007'),
+  (8, '2026-10-12 10:00:00 America/Santiago', 'REP-005', 20, 5200, 'Sugerencia manual', 'Pedida por Silvio V.', 'Recibida', null, null, 'PRV-001', 'DEMO-008'),
+  (9, '2026-10-14 10:00:00 America/Santiago', 'REP-003', 8, 14200, 'Alerta de mínimo', 'Stock 2 · mínimo 5', 'Recibida', null, null, 'PRV-001', 'DEMO-009'),
+  (10, '2026-10-15 10:00:00 America/Santiago', 'REP-002', 6, 9800, 'Mantención', 'OT-228 · TIL-004', 'Recibida', 'OT-228', null, 'PRV-001', 'DEMO-010');
 
 -- ajustes_inventario (1 filas)
 insert into ajustes_inventario (id_ajuste, fecha_hora, id_repuesto, stock_sistema, stock_contado, estado, registrado_por) values
